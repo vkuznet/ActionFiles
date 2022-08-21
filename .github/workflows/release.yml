@@ -41,8 +41,6 @@ jobs:
           #echo "UPLOAD_URL=${{ steps.create_release.outputs.upload_url }}" >> $GITHUB_ENV
           export UPLOAD_URL="${{ steps.create_release.outputs.upload_url }}"
           echo "::set-output name=upload_url::${UPLOAD_URL}"
-        outputs:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
 
       - name: Upload cli binaries
         id: upload-ecm-cli
@@ -54,6 +52,9 @@ jobs:
           asset_path: ./test.txt
           asset_name: test.txt
           asset_content_type: application/octet-stream
+
+      outputs:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
 
   job-macos:
     name: Build-macos
