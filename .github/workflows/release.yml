@@ -1,0 +1,81 @@
+name: Build release
+
+on:
+  push:
+    tags:
+      - '*.*.*'
+#   push:
+#     branches: [ main ]
+
+jobs:
+  job-linux:
+    name: Build-linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.19
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+
+      - name: Build-CLI
+        run: |
+          echo "test" > test.txt
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+      - name: Set upload_url
+        id: upload-url
+        run: |
+          echo "UPLOAD_URL=${{ steps.create_release.outputs.upload_url }}" >> $env:GITHUB_ENV
+          echo $env:GITHUB_ENV
+
+      - name: Upload cli binaries
+        id: upload-ecm-cli
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./test.txt
+          asset_name: test.txt
+          asset_content_type: application/octet-stream
+
+  job-macos:
+    name: Build-macos
+    runs-on: macos-latest
+    needs: [job-linux]
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.19
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: |
+          echo "build fyne" > file_macos.txt
+
+      - name: Upload app binaries
+        id: upload-ecm-app
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ env.UPLOAD_URL }}
+          asset_path: ./file_macos.txt
+          asset_name: file_macos.txt
+          asset_content_type: application/octet-stream
