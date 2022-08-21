@@ -39,6 +39,10 @@ jobs:
         id: upload-url
         run: |
           echo "UPLOAD_URL=${{ steps.create_release.outputs.upload_url }}" >> $GITHUB_ENV
+
+      - name: test upload_url
+        id: test-upload-url
+        run: |
           echo ${{ env.UPLOAD_URL }}
 
       - name: Upload cli binaries
