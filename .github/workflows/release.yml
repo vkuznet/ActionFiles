@@ -7,9 +7,6 @@ on:
 #   push:
 #     branches: [ main ]
 
-env:
-  UPLOAD_URL: ""
-
 jobs:
   job-linux:
     name: Build-linux
@@ -41,14 +38,11 @@ jobs:
       - name: Set upload_url
         id: upload-url
         run: |
-          echo "UPLOAD_URL=${{ steps.create_release.outputs.upload_url }}" >> $GITHUB_ENV
+          #echo "UPLOAD_URL=${{ steps.create_release.outputs.upload_url }}" >> $GITHUB_ENV
           export UPLOAD_URL="${{ steps.create_release.outputs.upload_url }}"
           echo "::set-output name=upload_url::${UPLOAD_URL}"
-
-      - name: test upload_url
-        id: test-upload-url
-        run: |
-          echo ${{ env.UPLOAD_URL }}
+        outputs:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
 
       - name: Upload cli binaries
         id: upload-ecm-cli
@@ -84,7 +78,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ needs.job-linux.outpus.upload_url }}
+          upload_url: ${{ needs.job-linux.outputs.upload_url }}
           asset_path: ./file_macos.txt
           asset_name: file_macos.txt
           asset_content_type: application/octet-stream
